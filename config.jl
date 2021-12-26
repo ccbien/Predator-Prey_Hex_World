@@ -13,8 +13,8 @@ function get_config_1()::Config
     kwargs = Dict(
         :n_rows => 4,
         :n_cols => 8,
-        :num_predators => 2,
-        :num_preys => 2,
+        :num_predators => 1,
+        :num_preys => 1,
         :num_iterations => 100,
         :num_steps => 100
     )
