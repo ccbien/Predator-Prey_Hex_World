@@ -1,8 +1,11 @@
+import Dates
 include("config.jl")
-include("model.jl")
 
-config = get_config_1()
-# model_predator = NashQLearning()
-# model_prey = NashQLearning()
+cf = get_config_1()
 
-# Reward ??
+log_path = "./log/" * string(Dates.now()) * "/"
+mkpath(log_path)
+open(log_path * "config.txt", "w") do io
+    write(io, string(cf))
+end
+
