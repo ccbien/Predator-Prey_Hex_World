@@ -20,8 +20,8 @@ function Q(nn::Chain, ob::Array{Float64})
 end
 
 function π(nn::Chain, ob::Array{Float64})
-    qvals = get_qvals(nn, ob)
-    return softmax(q_values)
+    qvals = Q(nn, ob)
+    return softmax(qvals)
 end
 
 function π(qvals::Array{Float64})
