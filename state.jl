@@ -48,17 +48,25 @@ function get_observation(state::State, anchor)::Array{Float64}
     r0, c0 = anchor
     x0, y0 = get_coordinate(r0, c0)
 
+    temp = []
     idx = 0
     for (r, c) in state.predators
         idx += 1
         x, y = get_coordinate(r, c)
         a[idx, :] = [x - x0, y - y0]
+        push!(temp, (x - x0)^2 + (y - y0)^2)
     end
     for (r, c) in state.preys
         idx += 1
         x, y = get_coordinate(r, c)
         a[idx, :] = [x - x0, y - y0]
+        push!(temp, (x - x0)^2 + (y - y0)^2)
     end
-    
+
+    temp[1 : M] = sortperm(temp[1 : M])
+    temp[M + 1 : M + N] = sortperm(temp[M + 1 : M + N]) .+ M
+
+    println(temp)
+    a = a[temp, :]
     return a
 end

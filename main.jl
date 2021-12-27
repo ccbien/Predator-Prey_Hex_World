@@ -6,9 +6,6 @@ function train(cf::Config)
     for iter in 1:cf.num_iterations
         s::State = get_random_state(cf)
         o = get_observation(s, s.predators[1])
-        println(s.predators)
-        println(s.preys)
-        println(o)
         return
     end
 end
