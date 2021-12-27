@@ -6,7 +6,7 @@ using Parameters: @with_kw
     num_predators::Int64
     num_preys::Int64
 
-    hidden_layers::Array{Int64}
+    hidden_layers::Vector{Int64}
     num_iterations::Int64
     num_steps::Int64
 end

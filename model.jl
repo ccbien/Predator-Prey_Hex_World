@@ -13,12 +13,12 @@ function get_nn(cf::Config)::Chain
     return gpu(Chain(layers...))
 end
 
-function generate_input(ob::Array{Float64}, a::Tuple{Int64, Int64})::Array{Float64}
+function generate_input(ob::Matrix{Float64}, a::Tuple{Int64, Int64})::Vector{Float64}
     x, y = get_vector(0, 0, a...)
     return [reshape(ob, :); x; y]
 end
 
-function Q(nn::Chain, ob::Array{Float64}, a::Tuple{Int64, Int64})
+function Q(nn::Chain, ob::Matrix{Float64}, a::Tuple{Int64, Int64})::Float64
     x = generate_input(ob, a)
     x = gpu(x)
     return Array(nn(x))[1]

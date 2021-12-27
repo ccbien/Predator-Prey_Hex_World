@@ -7,8 +7,8 @@ using StatsBase: sample, Weights
 struct State
     n_rows::Integer
     n_cols::Integer
-    predators::Array{Tuple{Int64, Int64}}
-    preys::Array{Tuple{Int64, Int64}}
+    predators::Vector{Tuple{Int64, Int64}}
+    preys::Vector{Tuple{Int64, Int64}}
 end
 
 function get_random_state(cf::Config)::State
@@ -41,7 +41,7 @@ function get_random_state(cf::Config)::State
     return State(n_rows, n_cols, predators, preys)
 end
 
-function get_observation(state::State, anchor::Tuple{Int64, Int64})::Array{Float64}
+function get_observation(state::State, anchor::Tuple{Int64, Int64})::Matrix{Float64}
     M = length(state.predators)
     N = length(state.preys)
     ob = Array{Float64, 2}(undef, M + N, 2)
@@ -69,7 +69,7 @@ function get_observation(state::State, anchor::Tuple{Int64, Int64})::Array{Float
     return ob
 end
 
-function softmax_response(nn::Chain, ob::Array{Float64})::Tuple{Int64, Int64}
+function softmax_response(nn::Chain, ob::Matrix{Float64})::Tuple{Int64, Int64}
     a = [(0, 0), (-1, -1), (-1, 1), (1, -1), (1, 1), (0, -2), (-2, 0)]
     q_values::Vector{Float64} = []
     for i in 1:7
