@@ -66,7 +66,6 @@ function get_observation(state::State, anchor)::Array{Float64}
     temp[1 : M] = sortperm(temp[1 : M])
     temp[M + 1 : M + N] = sortperm(temp[M + 1 : M + N]) .+ M
 
-    println(temp)
     a = a[temp, :]
     return a
 end
