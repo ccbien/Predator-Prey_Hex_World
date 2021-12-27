@@ -1,12 +1,14 @@
 include("config.jl")
 include("utils.jl")
 include("model.jl")
+using Flux: softmax
+using StatsBase: sample, Weights
 
 struct State
     n_rows::Integer
     n_cols::Integer
-    predators::Array{Tuple{Int32, Int32}}
-    preys::Array{Tuple{Int32, Int32}}
+    predators::Array{Tuple{Int64, Int64}}
+    preys::Array{Tuple{Int64, Int64}}
 end
 
 function get_random_state(cf::Config)::State
@@ -39,26 +41,25 @@ function get_random_state(cf::Config)::State
     return State(n_rows, n_cols, predators, preys)
 end
 
-function get_observation(state::State, anchor::Tuple{Int32, Int32})::Array{Float64}
+function get_observation(state::State, anchor::Tuple{Int64, Int64})::Array{Float64}
     M = length(state.predators)
     N = length(state.preys)
     ob = Array{Float64, 2}(undef, M + N, 2)
     r0, c0 = anchor
-    x0, y0 = get_coordinate(r0, c0)
 
     temp = []
     idx = 0
     for (r, c) in state.predators
         idx += 1
-        x, y = get_coordinate(r, c)
-        ob[idx, :] = [x - x0, y - y0]
-        push!(temp, (x - x0)^2 + (y - y0)^2)
+        x, y = get_vector(r0, c0, r, c)
+        ob[idx, :] = [x, y]
+        push!(temp, x^2 + y^2)
     end
     for (r, c) in state.preys
         idx += 1
-        x, y = get_coordinate(r, c)
-        ob[idx, :] = [x - x0, y - y0]
-        push!(temp, (x - x0)^2 + (y - y0)^2)
+        x, y = get_vector(r0, c0, r, c)
+        ob[idx, :] = [x, y]
+        push!(temp, x^2 + y^2)
     end
 
     temp[1 : M] = sortperm(temp[1 : M])
@@ -68,23 +69,13 @@ function get_observation(state::State, anchor::Tuple{Int32, Int32})::Array{Float
     return ob
 end
 
-function get_action(nn::Chain, ob::Array{Float64})::Tuple{Int32, Int32}
-    probs = π(nn, ob)
-    d = [(0, 0), (-1, -1), (-1, 1), (1, -1), (1, 1), (0, -2), (-2, 0)]
-    return d[argmax(probs)]
-end
-
-function get_action(qvals::Array{Float64})::Tuple{Int32, Int32}
-    probs = π(qvals)
-    d = [(0, 0), (-1, -1), (-1, 1), (1, -1), (1, 1), (0, -2), (-2, 0)]
-    return d[argmax(probs)]
-end
-
-function forward(s::State)
-    # ob_predators = get_observation.(s, s.predators)
-    # ob_preys = get_observation.(s, s.preys)
-
-    # act_predators = get_action.(model_predator, ob_predators)
-    # act_preys = get_action.(model_prey, ob_preys)
-    # # return new state and actions
+function choose_action(nn::Chain, ob::Array{Float64})::Tuple{Tuple{Int64, Int64}, Float64, Float64}
+    a = [(0, 0), (-1, -1), (-1, 1), (1, -1), (1, 1), (0, -2), (-2, 0)]
+    q_values = []
+    for i in 1:7
+        push!(q_values, Q(nn, ob, a[i]))
+    end
+    probs = softmax(q_values)
+    idx = sample([1,2,3,4,5,6,7], Weights(probs))
+    return a[idx], probs[idx], q_values[idx]
 end
