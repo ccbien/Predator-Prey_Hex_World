@@ -3,7 +3,7 @@ using Flux
 using CUDA
 
 struct QEstimator
-    model
+    nn
 end
 
 function get_QEstimator(cf::Config)
@@ -14,14 +14,14 @@ function get_QEstimator(cf::Config)
         push!(layers, Dense(cf.hidden_layers[i], cf.hidden_layers[i+1], relu))
     end
     push!(layers, Dense(cf.hidden_layers[N], 7, relu))
-    model = gpu(Chain(layers...))
-    return QEstimator(model)
+    nn = gpu(Chain(layers...))
+    return QEstimator(nn)
 end
 
 function get_Q_values(Q::QEstimator, o::Array{Float64})
     x = reshape(o, :)
     x = gpu(x)
-    return Q.model(x)
+    return Q.nn(x)
 end
 
 function get_action_prob(Q::QEstimator, o::Array{Float64})
