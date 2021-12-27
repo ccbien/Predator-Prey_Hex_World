@@ -13,8 +13,8 @@ function train(cf::Config)
         s = get_random_state(cf)
         for step in 1 : cf.num_steps
             ob_predators = get_observation.(s, s.predators)
-            ob_preys = get_observation.(s, s.preys)
             
+            ob_preys = get_observation.(s, s.preys)
         end
     end
 

@@ -69,13 +69,15 @@ function get_observation(state::State, anchor::Tuple{Int64, Int64})::Array{Float
     return ob
 end
 
-function choose_action(nn::Chain, ob::Array{Float64})::Tuple{Tuple{Int64, Int64}, Float64, Float64}
+function softmax_response(nn::Chain, ob::Array{Float64})::Tuple{Int64, Int64}
     a = [(0, 0), (-1, -1), (-1, 1), (1, -1), (1, 1), (0, -2), (-2, 0)]
-    q_values = []
+    q_values::Vector{Float64} = []
     for i in 1:7
         push!(q_values, Q(nn, ob, a[i]))
     end
     probs = softmax(q_values)
-    idx = sample([1,2,3,4,5,6,7], Weights(probs))
-    return a[idx], probs[idx], q_values[idx]
+    idx = sample(1:7, Weights(probs))
+    return a[idx]
 end
+
+# function forward(s::State, a::)

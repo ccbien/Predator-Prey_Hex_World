@@ -21,16 +21,5 @@ end
 function Q(nn::Chain, ob::Array{Float64}, a::Tuple{Int64, Int64})
     x = generate_input(ob, a)
     x = gpu(x)
-    return nn(x)
-end
-
-function choose_action(nn::Chain, ob::Array{Float64})::Tuple{Tuple{Int64, Int64}, Float64, Float64}
-    a = [(0, 0), (-1, -1), (-1, 1), (1, -1), (1, 1), (0, -2), (-2, 0)]
-    q_values::Array{Float64} = []
-    for i in 1:7
-        push!(q_values, Array(Q(nn, ob, a[i]))[1])
-    end
-    probs = softmax(q_values)
-    idx = sample([1,2,3,4,5,6,7], Weights(probs))
-    return a[idx], probs[idx], q_values[idx]
+    return Array(nn(x))[1]
 end
