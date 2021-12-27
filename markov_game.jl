@@ -1,5 +1,6 @@
 include("config.jl")
 include("utils.jl")
+include("model.jl")
 
 struct State
     n_rows::Integer
@@ -38,13 +39,10 @@ function get_random_state(cf::Config)::State
     return State(n_rows, n_cols, predators, preys)
 end
 
-function transition(s, a)
-end
-
-function get_observation(state::State, anchor)::Array{Float64}
+function get_observation(state::State, anchor::Tuple{Int32, Int32})::Array{Float64}
     M = length(state.predators)
     N = length(state.preys)
-    a = Array{Float64, 2}(undef, M + N, 2)
+    ob = Array{Float64, 2}(undef, M + N, 2)
     r0, c0 = anchor
     x0, y0 = get_coordinate(r0, c0)
 
@@ -53,19 +51,40 @@ function get_observation(state::State, anchor)::Array{Float64}
     for (r, c) in state.predators
         idx += 1
         x, y = get_coordinate(r, c)
-        a[idx, :] = [x - x0, y - y0]
+        ob[idx, :] = [x - x0, y - y0]
         push!(temp, (x - x0)^2 + (y - y0)^2)
     end
     for (r, c) in state.preys
         idx += 1
         x, y = get_coordinate(r, c)
-        a[idx, :] = [x - x0, y - y0]
+        ob[idx, :] = [x - x0, y - y0]
         push!(temp, (x - x0)^2 + (y - y0)^2)
     end
 
     temp[1 : M] = sortperm(temp[1 : M])
     temp[M + 1 : M + N] = sortperm(temp[M + 1 : M + N]) .+ M
 
-    a = a[temp, :]
-    return a
+    ob = ob[temp, :]
+    return ob
+end
+
+function get_action(nn::Chain, ob::Array{Float64})::Tuple{Int32, Int32}
+    probs = π(nn, ob)
+    d = [(0, 0), (-1, -1), (-1, 1), (1, -1), (1, 1), (0, -2), (-2, 0)]
+    return d[argmax(probs)]
+end
+
+function get_action(qvals::Array{Float64})::Tuple{Int32, Int32}
+    probs = π(qvals)
+    d = [(0, 0), (-1, -1), (-1, 1), (1, -1), (1, 1), (0, -2), (-2, 0)]
+    return d[argmax(probs)]
+end
+
+function forward(s::State)
+    # ob_predators = get_observation.(s, s.predators)
+    # ob_preys = get_observation.(s, s.preys)
+
+    # act_predators = get_action.(model_predator, ob_predators)
+    # act_preys = get_action.(model_prey, ob_preys)
+    # # return new state and actions
 end
