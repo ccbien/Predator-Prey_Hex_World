@@ -13,14 +13,14 @@ function get_nn(cf::Config)::Chain
     return gpu(Chain(layers...))
 end
 
-function Q(nn::Chain, o::Array{Float64})
-    x = reshape(o, :)
+function Q(nn::Chain, ob::Array{Float64})
+    x = reshape(ob, :)
     x = gpu(x)
     return nn(x)
 end
 
-function π(nn::Chain, o::Array{Float64})
-    qvals = get_qvals(nn, o)
+function π(nn::Chain, ob::Array{Float64})
+    qvals = get_qvals(nn, ob)
     return softmax(q_values)
 end
 
