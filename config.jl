@@ -9,6 +9,10 @@ using Parameters: @with_kw
     hidden_layers::Vector{Int64}
     num_iterations::Int64
     num_steps::Int64
+
+    # Adam optimizer
+    η::Float64
+    β::Tuple{Float64, Float64}
 end
 
 function get_config_1()::Config
@@ -19,20 +23,9 @@ function get_config_1()::Config
         :num_preys => 5,
         :hidden_layers => [32, 16],
         :num_iterations => 100,
-        :num_steps => 100
-    )
-    return Config(;kwargs...)
-end
-
-function get_config_2()::Config
-    kwargs = Dict(
-        :n_rows => 4,
-        :n_cols => 8,
-        :num_predators => 2,
-        :num_preys => 2,
-        :hidden_layers => [32, 16],
-        :num_iterations => 100,
-        :num_steps => 100
+        :num_steps => 100,
+        :η => 0.001,
+        :β => (0.9, 0.999),
     )
     return Config(;kwargs...)
 end

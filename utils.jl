@@ -2,7 +2,7 @@ function get_vector(r0::Int64, c0::Int64, r1::Int64, c1::Int64)::Tuple{Float64, 
     return (r1 - r0, (c1 - c0) * sqrt(3) / 4)
 end
 
-function is_outside(s::State, r, c)
+function is_outside(s, r, c)
     return r < 1 || s.n_rows < r || c < 1 || s.n_cols < c
 end
 

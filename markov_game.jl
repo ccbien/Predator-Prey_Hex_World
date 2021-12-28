@@ -16,13 +16,13 @@ function get_reward_dict()
         "predator_move" => -1,
         "predator_out" => -10,
         "predator_eat" => 20,
-        "closer_to_prey" => 5, # per step
-        "further_away_prey" => -5, # per step
+        "closer_to_prey" => 5, # per cell
+        "further_away_prey" => -5, # per cell
         "prey_move" => 2,
         "prey_out" => -10,
         "prey_eaten" => -100,
-        "closer_to_predator" => -5, # per step
-        "further_away_predator" => 5, # per step
+        "closer_to_predator" => -5, # per cell
+        "further_away_predator" => 5, # per cell
     )
 end
 
@@ -84,12 +84,9 @@ function get_observation(state::State, anchor::Tuple{Int64, Int64})::Matrix{Floa
     return ob
 end
 
-function softmax_response(nn::Chain, ob::Matrix{Float64})::Tuple{Int64, Int64}
+function softmax_response(model::Model, ob::Matrix{Float64})::Tuple{Int64, Int64}
     a = [(0, 0), (-1, -1), (-1, 1), (1, -1), (1, 1), (0, -2), (0, 2)]
-    q_values::Vector{Float64} = []
-    for i in 1:7
-        push!(q_values, Q(nn, ob, a[i]))
-    end
+    q_values = [Q(model, ob, a[i]) for i in 1:7]
     probs = softmax(q_values)
     idx = sample(1:7, Weights(probs))
     return a[idx]
