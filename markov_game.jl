@@ -11,6 +11,21 @@ struct State
     preys::Vector{Tuple{Int64, Int64}}
 end
 
+function get_reward_dict()
+    return Dict(
+        "predator_move" => -1,
+        "predator_out" => -10,
+        "predator_eat" => 20,
+        "closer_to_prey" => 5, # per step
+        "further_away_prey" => -5, # per step
+        "prey_move" => 2,
+        "prey_out" => -10,
+        "prey_eaten" => -100,
+        "closer_to_predator" => -5, # per step
+        "further_away_predator" => 5, # per step
+    )
+end
+
 function get_random_state(cf::Config)::State
     n_rows = cf.n_rows
     n_cols = cf.n_cols
@@ -70,7 +85,7 @@ function get_observation(state::State, anchor::Tuple{Int64, Int64})::Matrix{Floa
 end
 
 function softmax_response(nn::Chain, ob::Matrix{Float64})::Tuple{Int64, Int64}
-    a = [(0, 0), (-1, -1), (-1, 1), (1, -1), (1, 1), (0, -2), (-2, 0)]
+    a = [(0, 0), (-1, -1), (-1, 1), (1, -1), (1, 1), (0, -2), (0, 2)]
     q_values::Vector{Float64} = []
     for i in 1:7
         push!(q_values, Q(nn, ob, a[i]))
@@ -80,4 +95,85 @@ function softmax_response(nn::Chain, ob::Matrix{Float64})::Tuple{Int64, Int64}
     return a[idx]
 end
 
-# function forward(s::State, a::)
+function random_response()
+    return sample([(0, 0), (-1, -1), (-1, 1), (1, -1), (1, 1), (0, -2), (0, 2)])
+end
+
+function forward(s::State, a_predators::Vector{Tuple{Int64, Int64}}, a_preys::Vector{Tuple{Int64, Int64}})::Tuple{State, Vector{Float64}, Vector{Float64}}    
+    rewards = get_reward_dict()
+    rw1 = zeros(Float64, length(a_predators))
+    rw2 = zeros(Float64, length(a_preys))
+    rw1[:] .= rewards["predator_move"]
+    rw2[:] .= rewards["prey_move"]
+    eat = falses(length(s.predators))
+    is_alive = trues(length(s.preys))
+
+    s_next = deepcopy(s)
+    for (i, (r, c)) in enumerate(s.predators)
+        r, c = s.predators[i]
+        dr, dc = a_predators[i]
+        if is_outside(s, r + dr, c + dc)
+            rw1[i] += rewards["predator_out"]
+            dr = dc = 0
+        end 
+        s_next.predators[i] = (r + dr, c + dc)
+    end
+    for (i, (r, c)) in enumerate(s.preys)
+        r, c = s.preys[i]
+        dr, dc = a_preys[i]
+        if is_outside(s, r + dr, c + dc)
+            rw2[i] += rewards["prey_out"]
+            dr = dc = 0
+        end
+        s_next.preys[i] = (r + dr, c + dc)
+    end
+
+    count_predators = get_count_dict(s_next.predators)
+    count_preys = get_count_dict(s_next.preys)
+    for (i, item) in enumerate(s_next.predators)
+        eat[i] = true
+        rw1[i] += rewards["predator_eat"] * get(count_preys, item, 0) / count_predators[item]
+    end
+    for (i, item) in enumerate(s_next.preys)
+        if get(count_predators, item, 0) > 0
+            is_alive[i] = false
+            rw2[i] += rewards["prey_eaten"]
+            while true
+                r = rand(1:s.n_rows)
+                c = rand(1:s.n_cols)
+                if (r + c) % 2 == 1 || get(count_predators, (r, c), 0) > 0
+                    continue
+                end
+                s_next.preys[i] = (r, c)
+                break
+            end
+        end
+    end
+
+    for (i, ((r, c), (r_next, c_next))) in enumerate(zip(s.predators, s_next.predators))
+        if !eat[i]
+            min_steps = get_distance_to_the_nearest(r, c, s.preys[is_alive])
+            min_steps_next = get_distance_to_the_nearest(r_next, c_next, s_next.preys[is_alive])
+            Δ = abs(min_steps - min_steps_next)
+            if min_steps_next < min_steps
+                rw1[i] += rewards["closer_to_prey"] * Δ
+            else
+                rw1[i] += rewards["further_away_prey"] * Δ
+            end
+        end
+    end
+    for (i, ((r, c), (r_next, c_next))) in enumerate(zip(s.preys, s_next.preys))
+        if is_alive[i]
+            min_steps = get_distance_to_the_nearest(r, c, s.predators)
+            min_steps_next = get_distance_to_the_nearest(r_next, c_next, s_next.predators)
+            Δ = abs(min_steps - min_steps_next)
+            if min_steps_next < min_steps
+                rw2[i] += rewards["closer_to_predator"] * Δ
+            else
+                rw2[i] += rewards["further_away_predator"] * Δ
+            end
+        end
+    end
+
+    return s_next, rw1, rw2
+end
