@@ -1,5 +1,5 @@
 include("config.jl")
-using Flux: Chain, Dense, gpu, ADAM
+using Flux: Chain, Dense, relu,  gpu, ADAM, params, gradient, mse, update!
 struct Model
     nn::Chain
     opt::ADAM
@@ -23,14 +23,26 @@ function generate_input(ob::Matrix{Float64}, a::Tuple{Int64, Int64})::Vector{Flo
     return [reshape(ob, :); x; y]
 end
 
-function train_step(model::Model, ob::Matrix{Float64}, a::Tuple{Int64, Int64}, rw::Vector{Float64})::Float64
-    x = generate_input(ob, a)
+function train_step(model::Model, ob::Matrix{Float64}, a::Tuple{Int64, Int64}, rw::Float64)::Float64
+    x = gpu(generate_input(ob, a))
+    y_true = gpu([rw])
+    parameters = params(model.nn)
 
-    # loss, gradient
+    function mse_loss(x, y_true)
+        y_pred = model.nn(x)
+        # return sum((y .- ypred).^2)
+        return mse(y_pred, y_true)
+    end
+    
+    loss = 0
+    grads = gradient(parameters) do
+        loss = mse_loss(x, y_true)
+    end
+    update!(model.opt, parameters, grads)
+    return loss
 end
 
 function Q(model::Model, ob::Matrix{Float64}, a::Tuple{Int64, Int64})::Float64
-    x = generate_input(ob, a)
-    x = gpu(x)
+    x = gpu(generate_input(ob, a))
     return Array(model.nn(x))[1]
 end
