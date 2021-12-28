@@ -19,11 +19,11 @@ function get_config_1()::Config
     kwargs = Dict(
         :n_rows => 4,
         :n_cols => 8,
-        :num_predators => 5,
-        :num_preys => 5,
+        :num_predators => 3,
+        :num_preys => 3,
         :hidden_layers => [32, 16],
-        :num_iterations => 100,
-        :num_steps => 100,
+        :num_iterations => 10,
+        :num_steps => 10,
         :η => 0.001,
         :β => (0.9, 0.999),
     )
