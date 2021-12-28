@@ -11,6 +11,10 @@ struct State
     preys::Vector{Tuple{Int64, Int64}}
 end
 
+function get_all_actions()
+    return [(0, 0), (-1, -1), (-1, 1), (1, -1), (1, 1), (0, -2), (0, 2)]
+end
+
 function get_reward_dict()
     return Dict(
         "predator_move" => -1,
@@ -85,7 +89,7 @@ function get_observation(state::State, anchor::Tuple{Int64, Int64})::Matrix{Floa
 end
 
 function softmax_response(model::Model, ob::Matrix{Float64})::Tuple{Int64, Int64}
-    a = [(0, 0), (-1, -1), (-1, 1), (1, -1), (1, 1), (0, -2), (0, 2)]
+    a = get_all_actions()
     q_values = [Q(model, ob, a[i]) for i in 1:7]
     probs = softmax(q_values)
     idx = sample(1:7, Weights(probs))
@@ -93,7 +97,7 @@ function softmax_response(model::Model, ob::Matrix{Float64})::Tuple{Int64, Int64
 end
 
 function random_response()
-    return sample([(0, 0), (-1, -1), (-1, 1), (1, -1), (1, 1), (0, -2), (0, 2)])
+    return sample(get_all_actions)
 end
 
 function forward(s::State, a_predators::Vector{Tuple{Int64, Int64}}, a_preys::Vector{Tuple{Int64, Int64}})::Tuple{State, Vector{Float64}, Vector{Float64}}    
@@ -173,4 +177,19 @@ function forward(s::State, a_predators::Vector{Tuple{Int64, Int64}}, a_preys::Ve
     end
 
     return s_next, rw1, rw2
+end
+
+function get_utility(s::State, model::Model, agents::Vector{Tuple{Int64, Int64}})::Vector{Float64}
+    obs = [get_observation(s, agent) for agent in agents]
+    us = []
+    for ob in obs
+        q_values = [Q(model, ob, a) for a in get_all_actions()]
+        probs = softmax(q_values)
+        u = 0
+        for (a, p) in zip(get_all_actions(), probs)
+            u += Q(model, ob, a) * p
+        end
+        push!(us, u)
+    end
+    return us
 end
