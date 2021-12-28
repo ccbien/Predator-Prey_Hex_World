@@ -23,9 +23,9 @@ function generate_input(ob::Matrix{Float64}, a::Tuple{Int64, Int64})::Vector{Flo
     return [reshape(ob, :); x; y]
 end
 
-function train_step(model::Model, ob::Matrix{Float64}, a::Tuple{Int64, Int64}, rw::Float64)::Float64
+function train_step(model::Model, ob::Matrix{Float64}, a::Tuple{Int64, Int64}, y_true::Float64)::Float64
     x = gpu(generate_input(ob, a))
-    y_true = gpu([rw])
+    y_true = gpu([y_true])
     parameters = params(model.nn)
 
     function mse_loss(x, y_true)
