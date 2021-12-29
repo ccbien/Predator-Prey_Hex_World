@@ -66,7 +66,7 @@ function train(cf::Config)
 end
 
 cf = get_config(ARGS[1])
-log_path = "./log/" * string(format(now(), "YYYY-mm-dd_HH:MM:SS")) * "/"
+log_path = "./log/" * "[" * ARGS[1] * "]" * string(format(now(), "YYYY-mm-dd_HH:MM:SS")) * "/"
 model_path = log_path * "/model/"
 mkpath(log_path)
 mkpath(model_path)
