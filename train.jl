@@ -2,7 +2,6 @@ include("config.jl")
 include("markov_game.jl")
 include("model.jl")
 include("logger.jl")
-using Dates: now
 using BSON: @save
 
 function train(cf::Config)
@@ -66,8 +65,10 @@ function train(cf::Config)
 end
 
 cf = get_config(ARGS[1])
-log_path = "./log/" * "[" * ARGS[1] * "]" * string(format(now(), "YYYY-mm-dd_HH:MM:SS")) * "/"
+log_path = "./log/" * ARGS[1] * "/"
 model_path = log_path * "/model/"
+
+rm(log_path; force=true, recursive=true)
 mkpath(log_path)
 mkpath(model_path)
 log_config(log_path, cf)
