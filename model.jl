@@ -1,5 +1,5 @@
 include("config.jl")
-using Flux: Chain, Dense, relu,  gpu, ADAM, params, gradient, mse, update!
+using Flux: Chain, Dense, relu, σ, gpu, ADAM, params, gradient, mse, update!
 struct Model
     nn::Chain
     opt::ADAM
@@ -8,9 +8,9 @@ end
 function get_model(cf::Config)::Model
     layers = []
     N = length(cf.hidden_layers)
-    push!(layers, Dense(2*(cf.num_predators + cf.num_preys + 1), cf.hidden_layers[1], relu))
+    push!(layers, Dense(2*(cf.num_predators + cf.num_preys + 1), cf.hidden_layers[1], σ))
     for i in 1 : N - 1
-        push!(layers, Dense(cf.hidden_layers[i], cf.hidden_layers[i+1], relu))
+        push!(layers, Dense(cf.hidden_layers[i], cf.hidden_layers[i+1], σ))
     end
     push!(layers, Dense(cf.hidden_layers[N], 1))
     nn = gpu(Chain(layers...))
