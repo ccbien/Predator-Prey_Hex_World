@@ -56,15 +56,16 @@ function train(cf::Config)
             end
             s = s_next
         end
+
+        @save model_path*"predator.bson" model_predator
+        @save model_path*"prey.bson" model_prey
+        @save log_path*"train_losses.bson" losses
+        @save log_path*"train_rewards.bson" rewards
     end
 
-    @save model_path*"predator.bson" model_predator
-    @save model_path*"prey.bson" model_prey
-    @save log_path*"train_losses.bson" losses
-    @save log_path*"train_rewards.bson" rewards
 end
 
-cf = get_config_1()
+cf = get_config(ARGS[1])
 log_path = "./log/" * string(format(now(), "YYYY-mm-dd_HH:MM:SS")) * "/"
 model_path = log_path * "/model/"
 mkpath(log_path)

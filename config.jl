@@ -15,17 +15,44 @@ using Parameters: @with_kw
     β::Tuple{Float64, Float64}
 end
 
-function get_config_1()::Config
-    kwargs = Dict(
-        :n_rows => 4,
-        :n_cols => 8,
-        :num_predators => 3,
-        :num_preys => 3,
-        :hidden_layers => [32, 16],
-        :num_iterations => 10,
-        :num_steps => 10,
-        :η => 0.001,
-        :β => (0.9, 0.999),
-    )
+function get_config(name::String)::Config
+    kwargs = Dict()
+    if name == "1"
+        kwargs = Dict(
+            :n_rows => 4,
+            :n_cols => 8,
+            :num_predators => 1,
+            :num_preys => 1,
+            :hidden_layers => [32, 16, 8],
+            :num_iterations => 100,
+            :num_steps => 100,
+            :η => 0.01,
+            :β => (0.9, 0.999),
+        )
+    elseif name == "2"
+        kwargs = Dict(
+            :n_rows => 4,
+            :n_cols => 8,
+            :num_predators => 2,
+            :num_preys => 2,
+            :hidden_layers => [32, 16, 8],
+            :num_iterations => 1000,
+            :num_steps => 1000,
+            :η => 0.01,
+            :β => (0.9, 0.999),
+        )
+    elseif name == "3"
+        kwargs = Dict(
+            :n_rows => 4,
+            :n_cols => 8,
+            :num_predators => 2,
+            :num_preys => 2,
+            :hidden_layers => [64, 32, 16],
+            :num_iterations => 1000,
+            :num_steps => 1000,
+            :η => 0.01,
+            :β => (0.9, 0.999),
+        )
+    end
     return Config(;kwargs...)
 end
