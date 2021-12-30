@@ -96,7 +96,14 @@ function softmax_response(model::Model, ob::Matrix{Float64})::Tuple{Int64, Int64
     return a[idx]
 end
 
-function random_response()
+function best_response(model::Model, ob::Matrix{Float64})::Tuple{Int64, Int64}
+    a = get_all_actions()
+    q_values = [Q(model, ob, a[i]) for i in 1:7]
+    idx = argmax(q_values)
+    return a[idx]
+end
+
+function random_response(model::Model, ob::Matrix{Float64})
     return sample(get_all_actions)
 end
 
@@ -176,7 +183,7 @@ function forward(s::State, a_predators::Vector{Tuple{Int64, Int64}}, a_preys::Ve
         end
     end
 
-    return s_next, rw1, rw2
+    return s_next, rw1, rw2, eat, is_alive
 end
 
 function get_utility(s::State, model::Model, agents::Vector{Tuple{Int64, Int64}})::Vector{Float64}
