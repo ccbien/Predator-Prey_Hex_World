@@ -139,8 +139,10 @@ function forward(s::State, a_predators::Vector{Tuple{Int64, Int64}}, a_preys::Ve
     count_predators = get_count_dict(s_next.predators)
     count_preys = get_count_dict(s_next.preys)
     for (i, item) in enumerate(s_next.predators)
-        eat[i] = true
-        rw1[i] += rewards["predator_eat"] * get(count_preys, item, 0) / count_predators[item]
+        if get(count_preys, item, 0) > 0
+            eat[i] = true
+            rw1[i] += rewards["predator_eat"] * get(count_preys, item, 0) / count_predators[item]
+        end
     end
     for (i, item) in enumerate(s_next.preys)
         if get(count_predators, item, 0) > 0
