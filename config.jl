@@ -23,7 +23,7 @@ function get_config(name::String)::Config
             :n_cols => 8,
             :num_predators => 1,
             :num_preys => 1,
-            :hidden_layers => [32, 16, 8],
+            :hidden_layers => [16, 8],
             :num_iterations => 100,
             :num_steps => 100,
             :η => 0.01,
@@ -31,23 +31,11 @@ function get_config(name::String)::Config
         )
     elseif name == "2"
         kwargs = Dict(
-            :n_rows => 4,
-            :n_cols => 8,
-            :num_predators => 2,
-            :num_preys => 2,
-            :hidden_layers => [32, 16, 8],
-            :num_iterations => 1000,
-            :num_steps => 1000,
-            :η => 0.01,
-            :β => (0.9, 0.999),
-        )
-    elseif name == "3"
-        kwargs = Dict(
-            :n_rows => 4,
-            :n_cols => 8,
-            :num_predators => 2,
-            :num_preys => 2,
-            :hidden_layers => [64, 32, 16],
+            :n_rows => 5,
+            :n_cols => 10,
+            :num_predators => 3,
+            :num_preys => 3,
+            :hidden_layers => [32, 16],
             :num_iterations => 1000,
             :num_steps => 1000,
             :η => 0.01,
