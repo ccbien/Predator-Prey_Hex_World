@@ -30,7 +30,7 @@ function train(cf::Config)
             a_preys = [softmax_response(model_prey, ob) for ob in ob_preys]
 
             # Forward from the current state to get next state and reward values for each agent
-            s_next, rw_predators, rw_preys = forward(s, a_predators, a_preys)
+            s_next, rw_predators, rw_preys, _, _ = forward(s, a_predators, a_preys)
 
             # Calculate the "utility" values of the next state
             u_predators = get_utility(s_next, model_predator, s_next.predators)

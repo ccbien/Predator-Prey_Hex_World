@@ -104,10 +104,10 @@ function best_response(model::Model, ob::Matrix{Float64})::Tuple{Int64, Int64}
 end
 
 function random_response(model::Model, ob::Matrix{Float64})
-    return sample(get_all_actions)
+    return sample(get_all_actions())
 end
 
-function forward(s::State, a_predators::Vector{Tuple{Int64, Int64}}, a_preys::Vector{Tuple{Int64, Int64}})::Tuple{State, Vector{Float64}, Vector{Float64}}    
+function forward(s::State, a_predators::Vector{Tuple{Int64, Int64}}, a_preys::Vector{Tuple{Int64, Int64}})    
     rewards = get_reward_dict()
     rw1 = zeros(Float64, length(a_predators))
     rw2 = zeros(Float64, length(a_preys))
