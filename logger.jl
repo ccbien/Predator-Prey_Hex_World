@@ -2,6 +2,17 @@ using Dates: now, format
 using Statistics: mean
 using Printf: @printf
 
+mutable struct PredatorStat
+    reward::Vector{Float64}
+    eat_count::Int64
+    PredatorStat() = new([], 0)
+end
+
+mutable struct PreyStat
+    reward::Vector{Float64}
+    PreyStat() = new([])
+end
+
 function log_config(log_path::String, cf::Config)
     open(log_path * "train_log.txt", "a") do out
         redirect_stdout(out) do

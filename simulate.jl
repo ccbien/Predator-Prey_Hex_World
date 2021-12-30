@@ -6,17 +6,6 @@ using Flux
 using CUDA
 using BSON: @save, @load
 
-mutable struct PredatorStat
-    reward::Vector{Float64}
-    eat_count::Int64
-    PredatorStat() = new([], 0)
-end
-
-mutable struct PreyStat
-    reward::Vector{Float64}
-    PreyStat() = new([])
-end
-
 function simulate(cf::Config, res::NamedTuple, name::String)
     @load model_path*"predator.bson" model_predator
     @load model_path*"prey.bson" model_prey
