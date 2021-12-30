@@ -51,7 +51,7 @@ function train(cf::Config)
             losses.prey[(iter, step)] = mean(loss_preys)
             rewards.predator[(iter, step)] = mean(rw_predators)
             rewards.prey[(iter, step)] = mean(rw_preys)
-            if step % 20 == 0
+            if step % 100 == 0
                 log_train_step(log_path, iter, step, losses, rewards)
             end
             s = s_next
