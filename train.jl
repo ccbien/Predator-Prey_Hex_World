@@ -19,6 +19,7 @@ function train(cf::Config)
         prey = Dict{Tuple{Int64, Int64}, Float64}(),
     ) 
 
+    println("Start training")
     for iter in 1 : cf.num_iterations
         s = get_random_state(cf)
         for step in 1 : cf.num_steps
@@ -56,6 +57,7 @@ function train(cf::Config)
             s = s_next
         end
 
+        println("Iteration #" * string(iter) * " done")
         @save model_path*"predator.bson" model_predator
         @save model_path*"prey.bson" model_prey
         @save log_path*"train_losses.bson" losses
@@ -64,6 +66,7 @@ function train(cf::Config)
 
 end
 
+println("Train on config " * ARGS[1])
 cf = get_config(ARGS[1])
 log_path = "./log/" * ARGS[1] * "/"
 model_path = log_path * "/model/"

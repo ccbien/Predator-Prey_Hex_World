@@ -44,6 +44,9 @@ function simulate(cf::Config, res::NamedTuple, name::String)
             end
         end
 
+        if step % 1000 == 0
+            println("Step #" * string(step) * " done")
+        end
         s = s_next
     end
 
@@ -51,6 +54,7 @@ function simulate(cf::Config, res::NamedTuple, name::String)
     @save log_path * "sim_" * name * "_" * string(num_steps) * ".bson" stats
 end
 
+println("Simulate on config " * ARGS[1])
 cf = get_config(ARGS[1])
 log_path = "./log/" * ARGS[1] * "/"
 model_path = log_path * "/model/"
