@@ -22,27 +22,12 @@ function log_config(log_path::String, cf::Config)
     end
 end
 
-function log_train_step(log_path, iter, step, losses, rewards)
-    time = string(format(now(), "YYYY-mm-dd_HH:MM:SS"))
-    predator_loss = losses.predator[(iter, step)]
-    prey_loss = losses.prey[(iter, step)]
-    predator_rw = rewards.predator[(iter, step)]
-    prey_rw = rewards.prey[(iter, step)]
-    vals = (time, iter, step, predator_loss, prey_loss, predator_rw, prey_rw)
-    open(log_path * "train_log.txt", "a") do out
-        redirect_stdout(out) do
-            @printf("%s | iter=%6d | step=%6d | predator_loss=%11.4f | prey_loss=%11.4f | predator_rw=%8.2f | prey_rw=%8.2f |\n", vals...)
-        end 
-    end
-    @printf("%s | iter=%6d | step=%6d | predator_loss=%11.4f | prey_loss=%11.4f | predator_rw=%8.2f | prey_rw=%8.2f |\n", vals...)
-end
-
 function log_train_iteration(log_path, iter, num_steps, losses, rewards)
     time = string(format(now(), "YYYY-mm-dd_HH:MM:SS"))
-    predator_loss = mean([losses.predator[(iter, step)] for step in 1:num_steps])
-    prey_loss = mean([losses.prey[(iter, step)] for step in 1:num_steps])
-    predator_rw = mean([rewards.predator[(iter, step)] for step in 1:num_steps])
-    prey_rw = mean([rewards.prey[(iter, step)] for step in 1:num_steps])
+    predator_loss = mean(losses.predator)
+    prey_loss = mean(losses.prey)
+    predator_rw = mean(rewards.predator)
+    prey_rw = mean(rewards.prey)
     vals = (time, iter, predator_loss, prey_loss, predator_rw, prey_rw)
     open(log_path * "train_log.txt", "a") do out
         redirect_stdout(out) do
