@@ -17,16 +17,16 @@ end
 
 function get_reward_dict()
     return Dict(
-        "predator_move" => -1,
+        "predator_move" => -5,
         "predator_out" => -5,
-        "predator_eat" => 10,
+        "predator_eat" => 25,
         "closer_to_prey" => 5, # per cell
         "further_away_prey" => -5, # per cell
-        "prey_move" => 2,
+        "prey_move" => 10,
         "prey_out" => -5,
-        "prey_eaten" => -20,
-        "closer_to_predator" => -10, # per cell
-        "further_away_predator" => 10, # per cell
+        "prey_eaten" => -50,
+        "closer_to_predator" => -5, # per cell
+        "further_away_predator" => 5, # per cell
     )
 end
 
