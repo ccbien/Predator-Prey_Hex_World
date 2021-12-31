@@ -60,3 +60,13 @@ function log_train_info(log_path, line)
     end
     @printf("%s | %s\n", time, line)
 end
+
+function log_simulate_step(log_prefix, name, step)
+    time = string(format(now(), "YYYY-mm-dd_HH:MM:SS"))
+    open(log_prefix * ".txt", "a") do out
+        redirect_stdout(out) do
+            @printf("%s | Done step #%d\n", time, step)
+        end 
+    end
+    @printf("%s | %s | Done step #%d\n", time, name, step)
+end

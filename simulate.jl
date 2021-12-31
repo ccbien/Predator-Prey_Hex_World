@@ -3,17 +3,14 @@ include("markov_game.jl")
 include("model.jl")
 include("logger.jl")
 using Flux
-using CUDA
 using BSON: @save, @load
 
 function simulate(cf::Config, res::NamedTuple, name::String)
     @load model_path*"predator.bson" model_predator
     @load model_path*"prey.bson" model_prey
 
-    # Avoid CUDA bug
-    try model_predator.nn(gpu(rand(2*(cf.num_predators + cf.num_preys + 1)))) catch end
-
     num_steps = parse(Int64, ARGS[2])
+    log_prefix = log_path * "sim_" * name * "_" * string(num_steps)
     s = get_random_state(cf)
     
     predator_stats = [PredatorStat() for i in 1 : cf.num_predators]
@@ -44,14 +41,12 @@ function simulate(cf::Config, res::NamedTuple, name::String)
             end
         end
 
-        if step % 100 == 0
-            println("Sim-" * name * " step #" * string(step) * " done")
-        end
+        if step % 10000 == 0 log_simulate_step(log_prefix, name, step) end
         s = s_next
     end
 
     stats = (predator=predator_stats, prey=prey_stats)
-    @save log_path * "sim_" * name * "_" * string(num_steps) * ".bson" stats
+    @save log_prefix * ".bson" stats
 end
 
 println("Simulate on config " * ARGS[1])
