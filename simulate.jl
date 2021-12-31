@@ -40,11 +40,11 @@ function simulate(cf::Config, res::NamedTuple, name::String)
             push!(prey_stats[j].reward, rw2[i])
             if !is_alive[i]
                 push!(prey_stats, PreyStat())
-                prey_ids[i] = lenght(prey_stats)
+                prey_ids[i] = length(prey_stats)
             end
         end
 
-        if step % 10 == 0
+        if step % 100 == 0
             println("Sim-" * name * " step #" * string(step) * " done")
         end
         s = s_next
