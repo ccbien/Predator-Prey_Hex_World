@@ -9,6 +9,8 @@ function simulate(cf::Config, res::NamedTuple, name::String)
     @load model_path*"predator.bson" model_predator
     @load model_path*"prey.bson" model_prey
 
+
+    log_prefix = log_path * "sim_" * name * "_" * string(num_steps)
     s = get_random_state(cf)
     
     predator_stats = [PredatorStat() for i in 1 : cf.num_predators]
@@ -51,7 +53,6 @@ cf = get_config(ARGS[1])
 log_path = "./log/" * ARGS[1] * "/"
 model_path = log_path * "/model/"
 num_steps = parse(Int64, ARGS[2])
-log_prefix = log_path * "simulation_log_" * string(num_steps)
 
 simulate(cf, (predator=best_response, prey=best_response), "BB")
 simulate(cf, (predator=best_response, prey=random_response), "BR")
