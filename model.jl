@@ -1,5 +1,5 @@
 include("config.jl")
-using Flux: Chain, Dense, relu, σ, gpu, ADAM, params, gradient, mse, update!
+using Flux: Chain, Dense, relu, σ, ADAM, params, gradient, mse, update!
 struct Model
     nn::Chain
     opt::ADAM
@@ -13,8 +13,8 @@ function get_model(cf::Config)::Model
         push!(layers, Dense(cf.hidden_layers[i], cf.hidden_layers[i+1], σ))
     end
     push!(layers, Dense(cf.hidden_layers[N], 1))
-    nn = gpu(Chain(layers...))
-    opt = gpu(ADAM(cf.η, cf.β))
+    nn = Chain(layers...)
+    opt = ADAM(cf.η, cf.β)
     return Model(nn, opt)
 end
 
@@ -24,13 +24,12 @@ function generate_input(ob::Matrix{Float64}, a::Tuple{Int64, Int64})::Vector{Flo
 end
 
 function train_step(model::Model, ob::Matrix{Float64}, a::Tuple{Int64, Int64}, y_true::Float64)::Float64
-    x = gpu(generate_input(ob, a))
-    y_true = gpu([y_true])
+    x = generate_input(ob, a)
+    y_true = [y_true]
     parameters = params(model.nn)
 
     function mse_loss(x, y_true)
         y_pred = model.nn(x)
-        # return sum((y .- ypred).^2)
         return mse(y_pred, y_true)
     end
     
@@ -43,6 +42,6 @@ function train_step(model::Model, ob::Matrix{Float64}, a::Tuple{Int64, Int64}, y
 end
 
 function Q(model::Model, ob::Matrix{Float64}, a::Tuple{Int64, Int64})::Float64
-    x = gpu(generate_input(ob, a))
+    x = generate_input(ob, a)
     return Array(model.nn(x))[1]
 end
