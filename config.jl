@@ -33,10 +33,10 @@ function get_config(name::String)::Config
         kwargs = Dict(
             :n_rows => 5,
             :n_cols => 10,
-            :num_predators => 3,
-            :num_preys => 3,
+            :num_predators => 2,
+            :num_preys => 2,
             :hidden_layers => [32, 16],
-            :num_iterations => 10000,
+            :num_iterations => 100000,
             :num_steps => 100,
             :η => 0.01,
             :β => (0.9, 0.999),

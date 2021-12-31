@@ -1,3 +1,4 @@
+include("config.jl")
 using Dates: now, format
 using Statistics: mean
 using Printf: @printf
