@@ -1,5 +1,5 @@
 include("config.jl")
-using Flux: Chain, Dense, relu, σ, ADAM, params, gradient, mse, update!
+using Flux: Chain, Dense, relu, σ, ADAM, params, gradient, mse, mae, update!
 struct Model
     nn::Chain
     opt::ADAM
@@ -32,10 +32,15 @@ function train_step(model::Model, ob::Matrix{Float64}, a::Tuple{Int64, Int64}, y
         y_pred = model.nn(x)
         return mse(y_pred, y_true)
     end
+
+    function mae_loss(x, y_true)
+        y_pred = model.nn(x)
+        return mae(y_pred, y_true)
+    end
     
     loss = 0
     grads = gradient(parameters) do
-        loss = mse_loss(x, y_true)
+        loss = mae_loss(x, y_true)
     end
     update!(model.opt, parameters, grads)
     return loss
