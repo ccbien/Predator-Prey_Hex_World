@@ -11,7 +11,8 @@ end
 
 mutable struct PreyStat
     reward::Vector{Float64}
-    PreyStat() = new([])
+    life_time::Vector{Int64}
+    PreyStat() = new([], [0])
 end
 
 function log_config(log_path::String, cf::Config)
