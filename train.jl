@@ -57,7 +57,7 @@ function train(cf::Config)
             s = s_next
         end
 
-        println("Iteration #" * string(iter) * " done")
+        println("Train-config-" * ARGS[1] * " Iteration #" * string(iter) * " done")
         @save model_path*"predator.bson" model_predator
         @save model_path*"prey.bson" model_prey
         @save log_path*"train_losses.bson" losses
