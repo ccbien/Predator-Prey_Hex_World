@@ -6,9 +6,7 @@ using BSON: @save
 
 function train(cf::Config)
     model_predator = get_model(cf)
-    log_info(log_path, "Initialized Predator's model")
     model_prey = get_model(cf)
-    log_info(log_path, "Initialized Prey's model")
 
     losses = (
         predator = Dict{Tuple{Int64, Int64}, Float64}(),
@@ -19,7 +17,7 @@ function train(cf::Config)
         prey = Dict{Tuple{Int64, Int64}, Float64}(),
     ) 
 
-    println("Start training")
+    log_train_info(log_path, "Start training")
     for iter in 1 : cf.num_iterations
         s = get_random_state(cf)
         for step in 1 : cf.num_steps
@@ -51,17 +49,16 @@ function train(cf::Config)
             losses.prey[(iter, step)] = mean(loss_preys)
             rewards.predator[(iter, step)] = mean(rw_predators)
             rewards.prey[(iter, step)] = mean(rw_preys)
-            if step % 100 == 0
-                log_train_step(log_path, iter, step, losses, rewards)
-            end
+            
             s = s_next
         end
 
-        println("Train-config-" * ARGS[1] * " Iteration #" * string(iter) * " done")
         @save model_path*"predator.bson" model_predator
         @save model_path*"prey.bson" model_prey
         @save log_path*"train_losses.bson" losses
         @save log_path*"train_rewards.bson" rewards
+
+        log_train_iteration(log_path, iter, cf.num_steps, losses, rewards)
     end
 
 end
