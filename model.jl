@@ -8,7 +8,7 @@ end
 function get_model(cf::Config)::Model
     layers = []
     N = length(cf.hidden_layers)
-    push!(layers, Dense(2*(cf.num_predators + cf.num_preys + 1), cf.hidden_layers[1], σ))
+    push!(layers, Dense(2*(cf.num_predators + cf.num_preys + 2), cf.hidden_layers[1], σ))
     for i in 1 : N - 1
         push!(layers, Dense(cf.hidden_layers[i], cf.hidden_layers[i+1], σ))
     end
