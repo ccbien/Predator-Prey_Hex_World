@@ -52,8 +52,6 @@ function train(cf::Config)
 
         @save model_path*"predator.bson" model_predator
         @save model_path*"prey.bson" model_prey
-        @save log_path*"train_losses.bson" losses
-        @save log_path*"train_rewards.bson" rewards
 
         if iter % logging_interval == 0
              log_train_iteration(log_path, iter, cf.num_steps, losses, rewards)
