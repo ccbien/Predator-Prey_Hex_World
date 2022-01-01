@@ -18,24 +18,24 @@ function simulate(cf::Config, res::NamedTuple, name::String)
 
     for step in 1 : num_steps
         ob_predators = [get_observation(s, p) for p in s.predators]
-        a_predators = [res.predator(model_predator, ob) for ob in ob_predators]
+        a_predators = [res.predator(model_predator, ob, true) for ob in ob_predators]
         ob_preys = [get_observation(s, p) for p in s.preys]
-        a_preys = [res.prey(model_prey, ob) for ob in ob_preys]
+        a_preys = [res.prey(model_prey, ob, false) for ob in ob_preys]
         
-        s_next, rw1, rw2, eat, is_alive = forward(s, a_predators, a_preys)
+        s_next, out_predators, out_preys = forward(s, a_predators, a_preys)
         
-        for i in 1 : cf.num_predators
-            push!(predator_stats[i].reward, rw1[i])
-            if eat[i]
+        for (i, y) in enumerate(out_predators)
+            push!(predator_stats[i].reward, Q(y, true))
+            if y[1] == 1
                 predator_stats[i].eat_count += 1
             end
         end
         
-        for i in 1 : cf.num_preys
-            push!(prey_stats[i].reward, rw2[i])
+        for (i, y) in enumerate(out_preys)
+            push!(prey_stats[i].reward, Q(y, false))
             N = length(prey_stats[i].life_time)
             prey_stats[i].life_time[N] += 1
-            if !is_alive[i]
+            if y[1] == 1
                 push!(prey_stats[i].life_time, 0)
             end
         end
@@ -54,14 +54,14 @@ log_path = "./log/" * ARGS[1] * "/"
 model_path = log_path * "/model/"
 num_steps = parse(Int64, ARGS[2])
 
-# simulate(cf, (predator=best_response, prey=best_response), "BB")
-# simulate(cf, (predator=best_response, prey=softmax_response), "BS")
-# simulate(cf, (predator=best_response, prey=random_response), "BR")
+simulate(cf, (predator=best_response, prey=best_response), "BB")
+simulate(cf, (predator=best_response, prey=softmax_response), "BS")
+simulate(cf, (predator=best_response, prey=random_response), "BR")
 
-# simulate(cf, (predator=softmax_response, prey=best_response), "SB")
+simulate(cf, (predator=softmax_response, prey=best_response), "SB")
 simulate(cf, (predator=softmax_response, prey=softmax_response), "SS")
 simulate(cf, (predator=softmax_response, prey=random_response), "SR")
 
-# simulate(cf, (predator=random_response, prey=best_response), "RB")
+simulate(cf, (predator=random_response, prey=best_response), "RB")
 simulate(cf, (predator=random_response, prey=softmax_response), "RS")
 simulate(cf, (predator=random_response, prey=random_response), "RR")

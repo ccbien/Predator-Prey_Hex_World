@@ -64,6 +64,7 @@ function Q(model::Model, ob::Matrix{Float64}, a::Tuple{Int64, Int64}, is_predato
 end
 
 function Q(y::Vector{Float64}, is_predator::Bool)::Float64
+    rw = get_reward_dict()
     if is_predator
         return (y[1] + 1)/2 * rw["predator_eat"] - y[2] * rw["dist_factor"]
     else
