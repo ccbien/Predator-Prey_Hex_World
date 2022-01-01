@@ -83,9 +83,8 @@ function get_observation(state::State, anchor::Tuple{Int64, Int64})::Matrix{Floa
 
     temp[1 : M] = sortperm(temp[1 : M])
     temp[M + 1 : M + N] = sortperm(temp[M + 1 : M + N]) .+ M
-
     ob[1:M+N, :] = ob[temp, :]
-    ob[M+N+1, :] .= get_vector(1, 1, r0, c0)
+    ob[M+N+1, :] .= get_vector(0, 0, state.n_rows - 2*r0, state.n_cols - 2*c0)
     return ob
 end
 

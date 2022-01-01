@@ -2,6 +2,14 @@ function get_vector(r0::Int64, c0::Int64, r1::Int64, c1::Int64)::Tuple{Float64, 
     return (r1 - r0, (c1 - c0) * sqrt(3) / 4)
 end
 
+function normalize_vector(x, y)
+    l = sqrt(x^2 + y^2)
+    if l == 0
+        return 0, 0
+    end
+    return x / l, y / l
+end
+
 function is_outside(s, r, c)
     return r < 1 || s.n_rows < r || c < 1 || s.n_cols < c
 end

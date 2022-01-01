@@ -19,7 +19,11 @@ function get_model(cf::Config)::Model
 end
 
 function generate_input(ob::Matrix{Float64}, a::Tuple{Int64, Int64})::Vector{Float64}
-    x, y = get_vector(0, 0, a...)
+    ob = deepcopy(ob)
+    for i in 1 : size(ob)[1]
+        ob[i, :] .= normalize_vector(ob[i, :]...)
+    end
+    x, y = normalize_vector(get_vector(0, 0, a...)...)
     return [reshape(ob, :); x; y]
 end
 
