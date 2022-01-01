@@ -23,19 +23,17 @@ function log_config(log_path::String, cf::Config)
     end
 end
 
-function log_train_iteration(log_path, iter, num_steps, losses, rewards)
+function log_train_iteration(log_path, iter, num_steps, losses)
     time = string(format(now(), "YYYY-mm-dd_HH:MM:SS"))
     predator_loss = mean(losses.predator)
     prey_loss = mean(losses.prey)
-    predator_rw = mean(rewards.predator)
-    prey_rw = mean(rewards.prey)
-    vals = (time, iter, predator_loss, prey_loss, predator_rw, prey_rw)
+    vals = (time, iter, predator_loss, prey_loss)
     open(log_path * "train_log.txt", "a") do out
         redirect_stdout(out) do
-            @printf("%s | iter=%6d | predator_loss=%11.4f | prey_loss=%11.4f | predator_rw=%8.2f | prey_rw=%8.2f |\n", vals...)
+            @printf("%s | iter=%6d | predator_loss=%11.4f | prey_loss=%11.4f |\n", vals...)
         end 
     end
-    @printf("%s | iter=%6d | predator_loss=%11.4f | prey_loss=%11.4f | predator_rw=%8.2f | prey_rw=%8.2f |\n", vals...)
+    @printf("%s | iter=%6d | predator_loss=%11.4f | prey_loss=%11.4f |\n", vals...)
 end
 
 function log_train_info(log_path, line)

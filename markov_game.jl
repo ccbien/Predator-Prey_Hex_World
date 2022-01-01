@@ -15,21 +15,6 @@ function get_all_actions()
     return [(0, 0), (-1, -1), (-1, 1), (1, -1), (1, 1), (0, -2), (0, 2)]
 end
 
-function get_reward_dict()
-    return Dict(
-        "predator_move" => 0,
-        "predator_out" => 0,
-        "predator_eat" => 20,
-        "closer_to_prey" => 5, # per cell
-        "further_away_prey" => -5, # per cell
-        "prey_move" => 0,
-        "prey_out" => 0,
-        "prey_eaten" => -100,
-        "closer_to_predator" => -5, # per cell
-        "further_away_predator" => 5, # per cell
-    )
-end
-
 function get_random_state(cf::Config)::State
     n_rows = cf.n_rows
     n_cols = cf.n_cols
@@ -88,66 +73,52 @@ function get_observation(state::State, anchor::Tuple{Int64, Int64})::Matrix{Floa
     return ob
 end
 
-function softmax_response(model::Model, ob::Matrix{Float64})::Tuple{Int64, Int64}
+function softmax_response(model::Model, ob::Matrix{Float64}, is_predator::Bool)::Tuple{Int64, Int64}
     a = get_all_actions()
-    q_values = [Q(model, ob, a[i]) for i in 1:7]
+    q_values = [Q(model, ob, a[i], is_predator) for i in 1:7]
     probs = softmax(q_values)
     idx = sample(1:7, Weights(probs))
     return a[idx]
 end
 
-function best_response(model::Model, ob::Matrix{Float64})::Tuple{Int64, Int64}
+function best_response(model::Model, ob::Matrix{Float64}, is_predator::Bool)::Tuple{Int64, Int64}
     a = get_all_actions()
-    q_values = [Q(model, ob, a[i]) for i in 1:7]
+    q_values = [Q(model, ob, a[i], is_predator) for i in 1:7]
     idx = argmax(q_values)
     return a[idx]
 end
 
-function random_response(model::Model, ob::Matrix{Float64})
+function random_response(model::Model, ob::Matrix{Float64}, is_predator::Bool)
     return sample(get_all_actions())
 end
 
 function forward(s::State, a_predators::Vector{Tuple{Int64, Int64}}, a_preys::Vector{Tuple{Int64, Int64}})    
     rewards = get_reward_dict()
-    rw1 = zeros(Float64, length(a_predators))
-    rw2 = zeros(Float64, length(a_preys))
-    rw1[:] .= rewards["predator_move"]
-    rw2[:] .= rewards["prey_move"]
-    eat = falses(length(s.predators))
-    is_alive = trues(length(s.preys))
+    out_predators = [[-1., 0.] for a in a_predators]
+    out_preys = [[-1., 0.] for a in a_preys]
 
     s_next = deepcopy(s)
     for (i, (r, c)) in enumerate(s.predators)
         r, c = s.predators[i]
         dr, dc = a_predators[i]
-        if is_outside(s, r + dr, c + dc)
-            rw1[i] += rewards["predator_out"]
-            dr = dc = 0
-        end 
+        if is_outside(s, r + dr, c + dc) dr = dc = 0 end 
         s_next.predators[i] = (r + dr, c + dc)
     end
     for (i, (r, c)) in enumerate(s.preys)
         r, c = s.preys[i]
         dr, dc = a_preys[i]
-        if is_outside(s, r + dr, c + dc)
-            rw2[i] += rewards["prey_out"]
-            dr = dc = 0
-        end
+        if is_outside(s, r + dr, c + dc) dr = dc = 0 end
         s_next.preys[i] = (r + dr, c + dc)
     end
 
     count_predators = get_count_dict(s_next.predators)
     count_preys = get_count_dict(s_next.preys)
     for (i, item) in enumerate(s_next.predators)
-        if get(count_preys, item, 0) > 0
-            eat[i] = true
-            rw1[i] += rewards["predator_eat"] * get(count_preys, item, 0) / count_predators[item]
-        end
+        out_predators[i][1] = (get(count_preys, item, 0) / get(count_predators, item, 0))*2 - 1
     end
     for (i, item) in enumerate(s_next.preys)
         if get(count_predators, item, 0) > 0
-            is_alive[i] = false
-            rw2[i] += rewards["prey_eaten"]
+            out_preys[i][1] = 1.0
             while true
                 r = rand(1:s.n_rows)
                 c = rand(1:s.n_cols)
@@ -160,43 +131,46 @@ function forward(s::State, a_predators::Vector{Tuple{Int64, Int64}}, a_preys::Ve
         end
     end
 
+    is_alive = [x[1] == -1 for x in out_preys]
     for (i, ((r, c), (r_next, c_next))) in enumerate(zip(s.predators, s_next.predators))
-        if !eat[i]
+        if out_predators[i][1] == 0
             min_steps = get_distance_to_the_nearest(r, c, s.preys[is_alive])
             min_steps_next = get_distance_to_the_nearest(r_next, c_next, s_next.preys[is_alive])
-            Δ = abs(min_steps - min_steps_next)
-            if min_steps_next < min_steps
-                rw1[i] += rewards["closer_to_prey"] * Δ
+            if min_steps_next > min_steps
+                out_predators[i][2] = 1
+            elseif min_steps_next < min_steps
+                out_predators[i][2] = -1
             else
-                rw1[i] += rewards["further_away_prey"] * Δ
+                out_predators[i][2] = 0
             end
         end
     end
     for (i, ((r, c), (r_next, c_next))) in enumerate(zip(s.preys, s_next.preys))
-        if is_alive[i]
+        if out_preys[i][1] == 0
             min_steps = get_distance_to_the_nearest(r, c, s.predators)
             min_steps_next = get_distance_to_the_nearest(r_next, c_next, s_next.predators)
-            Δ = abs(min_steps - min_steps_next)
-            if min_steps_next < min_steps
-                rw2[i] += rewards["closer_to_predator"] * Δ
+            if min_steps_next > min_steps
+                out_preys[i][2] = 1
+            elseif min_steps_next < min_steps
+                out_preys[i][2] = -1
             else
-                rw2[i] += rewards["further_away_predator"] * Δ
+                out_preys[i][2] = 0
             end
         end
     end
 
-    return s_next, rw1, rw2, eat, is_alive
+    return s_next, out_predators, out_preys
 end
 
-function get_utility(s::State, model::Model, agents::Vector{Tuple{Int64, Int64}})::Vector{Float64}
+function get_utility(s::State, model::Model, agents::Vector{Tuple{Int64, Int64}}, is_predator::Bool)::Vector{Float64}
     obs = [get_observation(s, agent) for agent in agents]
     us = []
     for ob in obs
-        q_values = [Q(model, ob, a) for a in get_all_actions()]
+        q_values = [Q(model, ob, a, is_predator) for a in get_all_actions()]
         probs = softmax(q_values)
         u = 0
         for (a, p) in zip(get_all_actions(), probs)
-            u += Q(model, ob, a) * p
+            u += Q(model, ob, a, is_predator) * p
         end
         push!(us, u)
     end
