@@ -21,9 +21,9 @@ function train(cf::Config)
             # Transform the current state to observations for each agent
             # Each agent chooses an action with Softmax-response strategy
             ob_predators = [get_observation(s, p) for p in s.predators]
-            a_predators = [softmax_response(model_predator, ob) for ob in ob_predators]
+            a_predators = [softmax_selection(model_predator, ob) for ob in ob_predators]
             ob_preys = [get_observation(s, p) for p in s.preys]
-            a_preys = [softmax_response(model_prey, ob) for ob in ob_preys]
+            a_preys = [softmax_selection(model_prey, ob) for ob in ob_preys]
 
             # Forward from the current state to get next state and reward values for each agent
             s_next, rw_predators, rw_preys, _, _ = forward(s, a_predators, a_preys)

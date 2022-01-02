@@ -89,7 +89,7 @@ function get_observation(state::State, anchor::Tuple{Int64, Int64})::Matrix{Floa
     return ob
 end
 
-function softmax_response(model::Model, ob::Matrix{Float64})::Tuple{Int64, Int64}
+function softmax_selection(model::Model, ob::Matrix{Float64})::Tuple{Int64, Int64}
     a = get_all_actions()
     q_values = [Q(model, ob, a[i]) for i in 1:7]
     probs = softmax(q_values)
@@ -97,14 +97,14 @@ function softmax_response(model::Model, ob::Matrix{Float64})::Tuple{Int64, Int64
     return a[idx]
 end
 
-function best_response(model::Model, ob::Matrix{Float64})::Tuple{Int64, Int64}
+function selection(model::Model, ob::Matrix{Float64})::Tuple{Int64, Int64}
     a = get_all_actions()
     q_values = [Q(model, ob, a[i]) for i in 1:7]
     idx = argmax(q_values)
     return a[idx]
 end
 
-function random_response(model::Model, ob::Matrix{Float64})
+function random_selection(model::Model, ob::Matrix{Float64})
     return sample(get_all_actions())
 end
 
