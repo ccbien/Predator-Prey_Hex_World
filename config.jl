@@ -53,6 +53,18 @@ function get_config(name::String)::Config
             :η => 0.01,
             :β => (0.9, 0.999),
         )
+    elseif name == "4"
+        kwargs = Dict(
+            :n_rows => 5,
+            :n_cols => 15,
+            :num_predators => 3,
+            :num_preys => 3,
+            :hidden_layers => [32, 8],
+            :num_iterations => 20000,
+            :num_steps => 100,
+            :η => 0.01,
+            :β => (0.9, 0.999),
+        )
     end
     return Config(;kwargs...)
 end

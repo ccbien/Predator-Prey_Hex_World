@@ -54,14 +54,14 @@ log_path = "./log/" * ARGS[1] * "/"
 model_path = log_path * "/model/"
 num_steps = parse(Int64, ARGS[2])
 
-simulate(cf, (predator=best_response, prey=best_response), "BB")
-simulate(cf, (predator=best_response, prey=softmax_response), "BS")
-simulate(cf, (predator=best_response, prey=random_response), "BR")
+# simulate(cf, (predator=best_response, prey=best_response), "BB")
+# simulate(cf, (predator=best_response, prey=softmax_response), "BS")
+# simulate(cf, (predator=best_response, prey=random_response), "BR")
 
-simulate(cf, (predator=softmax_response, prey=best_response), "SB")
+# simulate(cf, (predator=softmax_response, prey=best_response), "SB")
 simulate(cf, (predator=softmax_response, prey=softmax_response), "SS")
 simulate(cf, (predator=softmax_response, prey=random_response), "SR")
 
-simulate(cf, (predator=random_response, prey=best_response), "RB")
+# simulate(cf, (predator=random_response, prey=best_response), "RB")
 simulate(cf, (predator=random_response, prey=softmax_response), "RS")
 simulate(cf, (predator=random_response, prey=random_response), "RR")
